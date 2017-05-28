@@ -18,8 +18,26 @@ def recognize(models: dict, test_set: SinglesData):
            ['WORDGUESS0', 'WORDGUESS1', 'WORDGUESS2',...]
    """
     warnings.filterwarnings("ignore", category=DeprecationWarning)
+
     probabilities = []
-    guesses = []
-    # TODO implement the recognizer
-    # return probabilities, guesses
-    raise NotImplementedError
+    #build a probability dict for each test word
+    for X, L in test_set.get_all_Xlengths().values():
+        probDict = {}
+        # try each test word in each trained word's model to see how it fits
+        for wordkey in models:
+            try:
+                score = models[wordkey].score(X, L)
+                probDict[wordkey] = score
+            except:
+                # need following line to pass automated test, which requires
+                #   a probDict for every test word, even if it can't be scored:
+                probDict[wordkey] = -float('inf')
+ #               print("couldn't score word ", wordkey)
+                continue
+            
+        probabilities.append(probDict)
+    # return the best fit for each test word    
+    guesses = [max(d, key=lambda x: d[x]) for d in probabilities]
+    # not clear yet why we need to have the probabilities list, or return it
+    return probabilities, guesses
+    
